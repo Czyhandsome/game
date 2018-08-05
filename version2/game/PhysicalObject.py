@@ -7,8 +7,11 @@ class PhysicalObject(Sprite):
     def __init__(self, *args, **kwargs):
         super(PhysicalObject, self).__init__(*args, **kwargs)
 
+        # Name property
+        self.name = 'Asteroid'
+
         # Dead property
-        self.dead = False
+        self.__dead = False
 
         # Added objects
         self.new_objects = []
@@ -39,7 +42,23 @@ class PhysicalObject(Sprite):
         :param other_object:
         :return:
         """
-        self.dead = True
+        if not (self.is_dead() or other_object.is_dead()):
+            if self.name != other_object.name:
+                if self.name == 'Bullet' and other_object.name == 'Asteroid':
+                    other_object.die()
+                elif self.name == 'Player' and other_object.name == 'Asteroid':
+                    self.die()
+                elif self.name == 'Asteroid':
+                    if other_object.name == 'Bullet':
+                        self.die()
+                    else:
+                        other_object.die()
+
+    def die(self):
+        self.__dead = True
+
+    def is_dead(self):
+        return self.__dead
 
     def check_bounds(self):
         """

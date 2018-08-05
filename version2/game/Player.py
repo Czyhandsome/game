@@ -16,6 +16,9 @@ class Player(PhysicalObject):
     def __init__(self, *args, **kwargs):
         super(Player, self).__init__(img=player_image, *args, **kwargs)
 
+        # Name
+        self.name = 'Player'
+
         # Thrust & rotate speed
         self.thrust = 20000.0
         self.rotate_speed = 200.0
@@ -42,24 +45,23 @@ class Player(PhysicalObject):
 
         # ----- Forward or backward ----- #
         if self.key_handler[key.UP]:
-            self.__speed_up(dt)
-            # Ignite engine flame
-            self.__ignite_engine_flame()
+            self.__run(dt)
         elif self.key_handler[key.DOWN]:
-            self.__speed_up(-dt)
-            # Ignite engine flame
-            self.__ignite_engine_flame()
+            self.__run(-dt)
         else:
-            # Stop engine flame
-            self.__stop_engine_flame()
-            # Stop running
-            self.__slow_down(dt)
+            self.__stop()
+
+        # ----- Speed up and slow down ----- #
+        if self.key_handler[key.J]:
+            self.__speed_up()
+        if self.key_handler[key.K]:
+            self.__slow_down()
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.SPACE:
             self.__fire()
 
-    def __speed_up(self, dt):
+    def __run(self, dt):
         """
         Speed up
         """
@@ -69,13 +71,25 @@ class Player(PhysicalObject):
         force_y = math.sin(angle_radians) * self.thrust * dt
         self.velocity_x = force_x
         self.velocity_y = force_y
+        # Ignite engine flame
+        self.__ignite_engine_flame()
 
-    def __slow_down(self, dt):
+    def __stop(self):
+        self.velocity_x = 0
+        self.velocity_y = 0
+        # Ignite engine flame
+        self.__stop_engine_flame()
+
+    def __speed_up(self):
+        self.thrust += 4000
+
+    def __slow_down(self):
         """
         Slow down
         """
-        self.velocity_x /= 2
-        self.velocity_y /= 2
+        self.thrust -= 4000
+        if self.thrust <= 2000:
+            self.thrust = 2000
 
     def __ignite_engine_flame(self):
         self.engine_sprite.visible = True

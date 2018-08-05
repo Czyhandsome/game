@@ -11,8 +11,18 @@ game_window = pyglet.window.Window(800, 600)
 main_batch = pyglet.graphics.Batch()
 
 # Score label
+score = 0
 score_label = pyglet.text.Label(text="Score: 0",
                                 x=10, y=575, batch=main_batch)
+
+
+# Update score
+def update_score():
+    global score
+    score += 10
+    score_label.text = "Score: {0}".format(score)
+
+
 # Level label
 level_label = pyglet.text.Label(text="My Amazon Game",
                                 x=400, y=575, anchor_x='center', batch=main_batch)
@@ -26,6 +36,11 @@ asteroids = load.asteroids(3, player_ship.position, main_batch)
 # All game objects
 game_objects = [player_ship] + asteroids
 
+# Number of asteroids
+num_asteroids = 3
+# Max number of asteroids
+max_num_asteroids = 10
+
 
 # Update all objects
 def update(dt):
@@ -34,7 +49,7 @@ def update(dt):
         for j in xrange(i + 1, len(game_objects)):
             obj_1 = game_objects[i]
             obj_2 = game_objects[j]
-            if not obj_1.dead and not obj_2.dead:
+            if not obj_1.is_dead() and not obj_2.is_dead():
                 if obj_1.collides_with(obj_2):
                     obj_1.handle_collision_with(obj_2)
                     obj_2.handle_collision_with(obj_1)
@@ -49,12 +64,25 @@ def update(dt):
         obj.new_objects = []
 
     # Remove dead objects
-    for to_remove in [obj for obj in game_objects if obj.dead]:
+    for to_remove in [obj for obj in game_objects if obj.is_dead()]:
         to_remove.delete()
         game_objects.remove(to_remove)
+        if to_remove.name == 'Asteroid':
+            update_score()
+            global num_asteroids
+            num_asteroids -= 1
+        print(to_remove.name)
 
     # Add object
     game_objects.extend(to_add)
+
+
+def update_asteroids(dt):
+    # Add asteroid
+    global num_asteroids
+    if num_asteroids < max_num_asteroids:
+        game_objects.extend(load.asteroids(1, player_ship.position, main_batch))
+        num_asteroids += 1
 
 
 @game_window.event
@@ -70,6 +98,8 @@ def on_draw():
 if __name__ == '__main__':
     # Schedule the movement of all objects
     pyglet.clock.schedule_interval(update, 1 / 120.0)
+    # Schedule creation of asteroids
+    pyglet.clock.schedule_interval(update_asteroids, 1)
     # Push player_ship into event stack
     game_window.push_handlers(player_ship.key_handler)
     game_window.push_handlers(player_ship)

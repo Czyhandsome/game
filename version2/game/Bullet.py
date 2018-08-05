@@ -10,12 +10,15 @@ class Bullet(PhysicalObject):
     def __init__(self, *args, **kwargs):
         super(Bullet, self).__init__(bullet_image, *args, **kwargs)
 
+        # Name
+        self.name = 'Bullet'
+
         # Bullet speed
         self.speed = 700
 
         # Schedule to die
-        pyglet.clock.schedule_once(self.die, 0.5)
+        pyglet.clock.schedule_once(self.__disappear, 0.5)
 
-    def die(self, dt):
+    def __disappear(self, dt):
         """Set that a bullet dies"""
-        self.dead = True
+        self.die()
