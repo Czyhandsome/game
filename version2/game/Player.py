@@ -3,7 +3,6 @@ import math
 from pyglet.sprite import Sprite
 from pyglet.window import key
 
-from version2.game.Bullet import Bullet
 from version2.game.PhysicalObject import PhysicalObject
 from version2.game.resources import player_image, engine_image
 
@@ -18,6 +17,9 @@ class Player(PhysicalObject):
 
         # Name
         self.name = 'Player'
+
+        # Bullets
+        self._num_bullets = 0
 
         # Thrust & rotate speed
         self.thrust = 20000.0
@@ -59,7 +61,12 @@ class Player(PhysicalObject):
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.SPACE:
-            self.__fire()
+            self._do_shoot_bullet()
+
+    def _do_shoot_bullet(self):
+        if self.can_shoot():
+            self.shoot_bullet(700)
+            self.add_shoot()
 
     def __run(self, dt):
         """
@@ -100,24 +107,14 @@ class Player(PhysicalObject):
     def __stop_engine_flame(self):
         self.engine_sprite.visible = False
 
-    def __fire(self):
-        if not self.new_objects:
-            angle_radians = -math.radians(self.rotation)
-            ship_radius = self.image.width / 2
-            bullet_x = self.x + math.cos(angle_radians) * ship_radius
-            bullet_y = self.y + math.sin(angle_radians) * ship_radius
-            new_bullet = Bullet(bullet_x, bullet_y, batch=self.batch)
-            bullet_vx = (
-                    self.velocity_x +
-                    math.cos(angle_radians) * new_bullet.speed
-            )
-            bullet_vy = (
-                    self.velocity_y +
-                    math.sin(angle_radians) * new_bullet.speed
-            )
-            new_bullet.velocity_x = bullet_vx
-            new_bullet.velocity_y = bullet_vy
-            self.new_objects.append(new_bullet)
+    def can_shoot(self):
+        return self._num_bullets <= 1
+
+    def add_shoot(self):
+        self._num_bullets += 1
+
+    def remove_shoot(self):
+        self._num_bullets -= 1
 
     def delete(self):
         """

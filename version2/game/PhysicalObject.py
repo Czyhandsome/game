@@ -1,5 +1,9 @@
-from pyglet.sprite import Sprite
+import math
+import random
 
+from pyglet.sprite import Sprite, pyglet
+
+from version2.game import load
 from version2.game.util import distance
 
 
@@ -17,13 +21,53 @@ class PhysicalObject(Sprite):
         self.new_objects = []
 
         # Velocity
-        self.velocity_x, self.velocity_y = 0.0, 0.0
+        self.thrust = 40
+        self.angle_radians = random.randint(0, 360)
+        self.velocity_x = 0
+        self.velocity_y = 0
+
+        if self.name == 'Asteroid' and not self.is_dead():
+            # Shoot bullet
+            # pyglet.clock.schedule_interval(self._inner_shoot, 1)
+            # Die
+            pyglet.clock.schedule_once(self._self_destroy, 10)
+
+    def _inner_shoot(self, dt):
+        if self.name == 'Asteroid':
+            self.shoot_bullet(100)
+
+    def shoot_bullet(self, speed):
+        if self.image:
+            new_bullet = load.new_bullet(self.name + " Bullet",
+                                         self.rotation,
+                                         self.image.width / 2,
+                                         self.x,
+                                         self.y,
+                                         self.velocity_x,
+                                         self.velocity_y,
+                                         speed,
+                                         self.batch)
+            self.new_objects.append(new_bullet)
+
+    def _self_destroy(self, dt):
+        self.die()
 
     def update(self, dt):
         """Update the object's position"""
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
         self.check_bounds()
+
+    def speed_up(self, dt):
+        if self.thrust <= 2000:
+            self.thrust += 40
+        self._set_velocity(dt)
+
+    def _set_velocity(self, dt):
+        force_x = math.cos(self.angle_radians) * self.thrust * dt
+        force_y = math.sin(self.angle_radians) * self.thrust * dt
+        self.velocity_x = force_x
+        self.velocity_y = force_y
 
     def collides_with(self, other_object: 'PhysicalObject'):
         """
@@ -44,14 +88,17 @@ class PhysicalObject(Sprite):
         """
         if not (self.is_dead() or other_object.is_dead()):
             if self.name != other_object.name:
-                if self.name == 'Bullet' and other_object.name == 'Asteroid':
+                if self.name == 'Asteroid Bullet' and other_object.name == 'Player':
                     other_object.die()
-                elif self.name == 'Player' and other_object.name == 'Asteroid':
+                elif self.name == 'Player Bullet' and other_object.name == 'Asteroid':
+                    other_object.die()
+                elif self.name == 'Player' and \
+                        (other_object.name == 'Asteroid' or other_object.name == 'Asteroid Bullet'):
                     self.die()
                 elif self.name == 'Asteroid':
-                    if other_object.name == 'Bullet':
+                    if other_object.name == 'Player Bullet':
                         self.die()
-                    else:
+                    elif other_object.name == 'Player':
                         other_object.die()
 
     def die(self):

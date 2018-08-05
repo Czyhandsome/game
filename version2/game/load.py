@@ -50,3 +50,38 @@ def player_lives(num_icons, batch=None):
         new_sprite.scale = 0.5
         _lives.append(new_sprite)
     return _lives
+
+
+def new_bullet(name, rotation, width, x, y, velocity_x, velocity_y, speed, batch):
+    """
+    Create a new bullet
+    :param velocity_x:
+    :param velocity_y:
+    :param name:
+    :param rotation:
+    :param width:
+    :param x:
+    :param y:
+    :param speed:
+    :param batch:
+    :return:
+    """
+    angle_radians = -math.radians(rotation)
+    ship_radius = width
+    bullet_x = x + math.cos(angle_radians) * ship_radius
+    bullet_y = y + math.sin(angle_radians) * ship_radius
+    from version2.game.Bullet import Bullet
+    _new_bullet = Bullet(bullet_x, bullet_y, batch=batch)
+    _new_bullet.name = name
+    _new_bullet.speed = speed
+    bullet_vx = (
+            velocity_x +
+            math.cos(angle_radians) * _new_bullet.speed
+    )
+    bullet_vy = (
+            velocity_y +
+            math.sin(angle_radians) * _new_bullet.speed
+    )
+    _new_bullet.velocity_x = bullet_vx
+    _new_bullet.velocity_y = bullet_vy
+    return _new_bullet

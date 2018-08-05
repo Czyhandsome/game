@@ -17,7 +17,7 @@ score_label = pyglet.text.Label(text="Score: 0",
 
 
 # Update score
-def update_score():
+def update_score(dt):
     global score
     score += 10
     score_label.text = "Score: {0}".format(score)
@@ -68,21 +68,27 @@ def update(dt):
         to_remove.delete()
         game_objects.remove(to_remove)
         if to_remove.name == 'Asteroid':
-            update_score()
+            # update_score(dt)
             global num_asteroids
             num_asteroids -= 1
+        elif to_remove.name == 'Player Bullet':
+            player_ship.remove_shoot()
         print(to_remove.name)
 
     # Add object
     game_objects.extend(to_add)
 
 
+# 更新小行星
 def update_asteroids(dt):
     # Add asteroid
     global num_asteroids
     if num_asteroids < max_num_asteroids:
         game_objects.extend(load.asteroids(1, player_ship.position, main_batch))
         num_asteroids += 1
+    for p_object in game_objects:
+        if p_object is not None and not p_object.is_dead() and p_object.name == 'Asteroid':
+            p_object.speed_up(dt)
 
 
 @game_window.event
@@ -95,11 +101,18 @@ def on_draw():
     main_batch.draw()
 
 
+def auto_update_score(dt):
+    if not player_ship.is_dead():
+        update_score(dt)
+
+
 if __name__ == '__main__':
     # Schedule the movement of all objects
     pyglet.clock.schedule_interval(update, 1 / 120.0)
     # Schedule creation of asteroids
     pyglet.clock.schedule_interval(update_asteroids, 1)
+    # Add 10 points every second
+    pyglet.clock.schedule_interval(auto_update_score, 0.1)
     # Push player_ship into event stack
     game_window.push_handlers(player_ship.key_handler)
     game_window.push_handlers(player_ship)
