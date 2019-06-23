@@ -4,11 +4,13 @@ import pygame
 
 
 class MyFaceClass(pygame.sprite.Sprite):
-    def __init__(self, image_file, location):
+    def __init__(self, image_file, location, width, height):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(image_file)
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = location
+        self.width = width
+        self.height = height
         self.sx = 10
         self.sy = 10
 
@@ -17,12 +19,12 @@ class MyFaceClass(pygame.sprite.Sprite):
         self._change_speed()
 
     def _change_speed(self):
-        self.sx, self.sy = self._raise(self.sx), self._raise(self.sy)
+        # self.sx, self.sy = self._raise(self.sx), self._raise(self.sy)
 
-        if self.rect.left < 0 or self.rect.right > width:
+        if self.rect.left < 0 or self.rect.right > self.width:
             self.sx = -self.sx
 
-        if self.rect.top < 0 or self.rect.bottom > height:
+        if self.rect.top < 0 or self.rect.bottom > self.height:
             self.sy = -self.sy
 
     @staticmethod
@@ -44,7 +46,7 @@ if __name__ == '__main__':
     for row in range(0, num):
         for column in range(0, num):
             location = [column * 180 + 10, row * 180 + 10]
-            face = MyFaceClass(img_file, location)
+            face = MyFaceClass(img_file, location, width, height)
             faces.append(face)
     for face in faces:
         screen.blit(face.image, face.rect)
